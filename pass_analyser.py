@@ -4,7 +4,6 @@ import mysql.connector
 import bcrypt
 from config import MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE
 
-# Database connection
 def get_db_connection():
     return mysql.connector.connect(
         host=MYSQL_HOST,
@@ -12,12 +11,8 @@ def get_db_connection():
         password=MYSQL_PASSWORD,
         database=MYSQL_DATABASE
     )
-
-# Function to hash a password
 def hash_password(password):
     return bcrypt.hashpw(password.encode(), bcrypt.gensalt())
-
-# Save user
 def save_user(username, password):
     hashed_password = hash_password(password)
     try:
@@ -29,37 +24,25 @@ def save_user(username, password):
         return True
     except mysql.connector.IntegrityError:
         return False
-
-# Check password strength
 def check_password_strength(password):
     points_gained = 0
     feedback = []
-
-    # Check length
     if len(password) >= 8:
         points_gained += 1
     else:
         feedback.append("Password should be at least 8 characters long.")
-
-    # Check uppercase
     if re.search(r'[A-Z]', password):
         points_gained += 1
     else:
         feedback.append("Include at least one uppercase letter.")
-
-    # Check lowercase
     if re.search(r'[a-z]', password):
         points_gained += 1
     else:
         feedback.append("Include at least one lowercase letter.")
-
-    # Check numbers
     if re.search(r'[0-9]', password):
         points_gained += 1
     else:
         feedback.append("Include at least one number.")
-
-    # Check special characters
     if re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
         points_gained += 1
     else:
@@ -68,18 +51,12 @@ def check_password_strength(password):
     strength_score = (points_gained / 5) * 100
     return strength_score, points_gained, feedback
 
-# Load common passwords from password.txt
 def load_password_list():
     with open("password.txt", "r") as f:
         return [line.strip() for line in f.readlines()]
 
-# Streamlit App
 st.title("Password Strength Analyzer with Common Password Check")
-
-# Load common passwords
 common_passwords = load_password_list()
-
-# Tabs
 tabs = st.tabs(["Sign-Up", "Login"])
 
 with tabs[0]:
@@ -89,7 +66,6 @@ with tabs[0]:
 
     if st.button("Sign-Up"):
         if username and password:
-            # Check password strength
             strength_score, points_gained, feedback = check_password_strength(password)
 
             if points_gained < 5:
@@ -99,7 +75,6 @@ with tabs[0]:
             elif password in common_passwords:
                 st.error("Easily hackable password! Choose a stronger password.")
             else:
-                # Save user
                 if save_user(username, password):
                     st.success("User registered successfully!")
                 else:
